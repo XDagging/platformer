@@ -40,6 +40,11 @@ public class Tile{
 		return solid;
 	}
 	
+	public void setImage(BufferedImage image) {
+		this.image = image;
+	}
+
+
 	public RectHitbox getHitbox() {
 		return hitbox;
 	}
