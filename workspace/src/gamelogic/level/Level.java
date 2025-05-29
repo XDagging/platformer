@@ -33,6 +33,8 @@ public class Level {
 	private boolean playerDead;
 	private boolean playerWin;
 
+	private ArrayList<Water> waterValues = new ArrayList<>();
+
 	private ArrayList<Enemy> enemiesList = new ArrayList<>();
 	private ArrayList<Flower> flowers = new ArrayList<>();
 
@@ -59,36 +61,31 @@ public class Level {
 		return leveldata;
 	}
 
-	
-	private void addGas(int col, int row, Map map, int numSquaresToFill, ArrayList<Gas> placedThisRound) {
+		private void addGas(int col, int row, Map map, int numSquaresToFill, ArrayList<Gas> placedThisRound) {
        	 	Gas g = new Gas (col, row, tileSize, tileset.getImage("GasOne"), this, 0);
 			map.addTile(col, row, g);
 			placedThisRound.add(g);
 			numSquaresToFill--;
-			
-			
-			while((numSquaresToFill>0)&&placedThisRound.size()>0) {
-					int r = placedThisRound.get(0).getRow();
-					int c = placedThisRound.get(0).getCol();
-				
+			while((placedThisRound.size()>0)&&(numSquaresToFill>0)) {
+				int r = placedThisRound.get(0).getRow();
+				int c = placedThisRound.get(0).getCol();
 				placedThisRound.remove(0);
-        
         		for(int rowIndex = r-1; rowIndex<r+2; rowIndex++){
             		for(int colIndex = c; colIndex>c-2 ; colIndex-=2){
-
 						if ((map.getTiles().length>colIndex)&&(map.getTiles()[colIndex].length>rowIndex)&&(map.getTiles()[colIndex][rowIndex] instanceof Gas == false)&& (map.getTiles()[colIndex][rowIndex].isSolid()==false)) {
 							Gas x = new Gas (colIndex, rowIndex, tileSize, tileset.getImage("GasOne"), this, 0);
 							map.addTile(colIndex,rowIndex, x);
-							placedThisRound.add(x);
 							numSquaresToFill--;
+							placedThisRound.add(x);
 						}
                 		if(colIndex ==c){
+
                     		colIndex+=3;
                 		}
-            	}    
+            		}    
+				}
 			}
-			}
-	}	
+		}	
 
 
 
@@ -217,6 +214,17 @@ public class Level {
 				}
 			}
 
+			for (int i=0; i<waterValues.size(); i++) {
+				if (map.getTiles()[waterValues.get(i).getCol()][waterValues.get(i).getRow()].getHitbox().isIntersecting(player.getHitbox())) {
+					System.out.println("This is touching");
+				}
+
+
+			}
+
+
+			
+
 			// Update the map
 			map.update(tslf);
 
@@ -241,6 +249,8 @@ public class Level {
 		} else if (fullness ==0) {
 			w = new Water (col, row, tileSize, tileset.getImage("Falling_water"), this, fullness);
 		}		
+
+		waterValues.add(w);
 		map.addTile(col,row,w);
 
 		int newFullness = 0;
@@ -266,7 +276,6 @@ public class Level {
 		
 		}
 	}
-
 
 
 	public void draw(Graphics g) {
@@ -338,18 +347,15 @@ public class Level {
 	public void addPlayerDieListener(PlayerDieListener listener) {
 		dieListeners.add(listener);
 	}
-
 	// ------------------------Win-Listener
 	public void throwPlayerWinEvent() {
 		for (PlayerWinListener playerWinListener : winListeners) {
 			playerWinListener.onPlayerWin();
 		}
 	}
-
 	public void addPlayerWinListener(PlayerWinListener listener) {
 		winListeners.add(listener);
 	}
-
 	// ---------------------------------------------------------Getters
 	public boolean isActive() {
 		return active;

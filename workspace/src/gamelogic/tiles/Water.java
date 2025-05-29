@@ -19,6 +19,10 @@ public class Water extends Tile{
 		return fullness;
 	}
 	
+
+
+
+
 	public void setIntensity(int fullness) {
 		this.fullness = fullness;
 	}

@@ -26,6 +26,9 @@ public class Tile{
 	}
 	
 	public void update (float tslf) {};
+
+
+	
 	
 	public void draw (Graphics g) {
 		if(image != null) g.drawImage(image, (int)position.x, (int)position.y, size, size, null);
