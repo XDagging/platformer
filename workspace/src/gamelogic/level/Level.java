@@ -36,13 +36,13 @@ public class Level {
 	private boolean playerWin;
 	private boolean canTeleport = true;
 	private ArrayList<Water> waterValues = new ArrayList<>();
-
+	private ArrayList<Gas> gasValues = new ArrayList<>();
 	private ArrayList<Enemy> enemiesList = new ArrayList<>();
 	private ArrayList<Flower> flowers = new ArrayList<>();
 
 	private List<PlayerDieListener> dieListeners = new ArrayList<>();
 	private List<PlayerWinListener> winListeners = new ArrayList<>();
-
+	private boolean isInGas = false;
 	private Mapdata mapdata;
 	private int width;
 	private int height;
@@ -67,6 +67,7 @@ public class Level {
 		private void addGas(int col, int row, Map map, int numSquaresToFill, ArrayList<Gas> placedThisRound) {
        	 	Gas g = new Gas (col, row, tileSize, tileset.getImage("GasOne"), this, 0);
 			map.addTile(col, row, g);
+			gasValues.add(g);
 			placedThisRound.add(g);
 			numSquaresToFill--;
 			while((placedThisRound.size()>0)&&(numSquaresToFill>0)) {
@@ -78,6 +79,7 @@ public class Level {
 						if ((map.getTiles().length>colIndex)&&(map.getTiles()[colIndex].length>rowIndex)&&(map.getTiles()[colIndex][rowIndex] instanceof Gas == false)&& (map.getTiles()[colIndex][rowIndex].isSolid()==false)) {
 							Gas x = new Gas (colIndex, rowIndex, tileSize, tileset.getImage("GasOne"), this, 0);
 							map.addTile(colIndex,rowIndex, x);
+							gasValues.add(x);
 							numSquaresToFill--;
 							placedThisRound.add(x);
 						}
@@ -94,10 +96,9 @@ public class Level {
 
 
 	public void restartLevel() {
-		CompletableFuture.delayedExecutor(4, TimeUnit.SECONDS).execute(() -> {
-			canTeleport = true;
-  		// Your code here executes after 5 seconds!
-		});
+		
+		waterValues.clear();
+		gasValues.clear();
 		int[][] values = mapdata.getValues();
 		Tile[][] tiles = new Tile[width][height];
 
@@ -201,6 +202,10 @@ public class Level {
 				player.setX((int) (Math.random()*maxRow));
 				player.cancelMomentum();
 				canTeleport = false;
+				CompletableFuture.delayedExecutor(4, TimeUnit.SECONDS).execute(() -> {
+					canTeleport = true;
+  					// Your code here executes after 5 seconds!
+				});
 			break;
 
 
@@ -212,6 +217,43 @@ public class Level {
 
   
 }
+
+
+	public void checkGas() {
+		// First checks if the user is in gas;
+		int playerCol = (int) (player.getX() / tileSize);
+    	int playerRow = (int) (player.getY() / tileSize);
+
+		for (int i=0; i<gasValues.size(); i++) {
+
+			if (playerCol==gasValues.get(i).getCol()&&playerRow==gasValues.get(i).getRow()) {
+				// this would only occur if the user is actually in the
+
+				isInGas = true;
+				
+				CompletableFuture.delayedExecutor(5, TimeUnit.SECONDS).execute(() -> {
+					System.out.println("This somehow occured");
+					if (isInGas) {
+						isInGas = false;
+						onPlayerDeath();
+					}
+  					// Your code here executes after 5 seconds!
+				});
+				
+
+
+				return; 
+
+			}
+
+		}
+
+		isInGas = false;
+
+
+		
+
+	}
 
 	public void update(float tslf) {
 		if (active) {
@@ -248,7 +290,18 @@ public class Level {
 				}
 			}
 
+
+			
+
+
+
+
+
 			teleportPerson();
+			if (!isInGas) {
+				checkGas(); 
+			}
+		
 			
 
 			
