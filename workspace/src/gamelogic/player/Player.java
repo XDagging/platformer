@@ -60,4 +60,17 @@ public class Player extends PhysicsObject{
 		
 		hitbox.draw(g);
 	}
+
+	public void setY(float y) {
+    	this.position.y = y;
+	}
+
+	public void setX(float x) {
+		this.position.x = x;
+	}
+	public void cancelMomentum() {
+		movementVector.y = 0;
+		movementVector.x = 0;
+	}
+
 }

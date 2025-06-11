@@ -3,6 +3,8 @@ package gamelogic.level;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import gameengine.PhysicsObject;
 import gameengine.graphics.Camera;
@@ -32,7 +34,7 @@ public class Level {
 	private boolean active;
 	private boolean playerDead;
 	private boolean playerWin;
-
+	private boolean canTeleport = true;
 	private ArrayList<Water> waterValues = new ArrayList<>();
 
 	private ArrayList<Enemy> enemiesList = new ArrayList<>();
@@ -49,6 +51,7 @@ public class Level {
 	public static float GRAVITY = 70;
 
 	public Level(LevelData leveldata) {
+		
 		this.leveldata = leveldata;
 		mapdata = leveldata.getMapdata();
 		width = mapdata.getWidth();
@@ -91,6 +94,10 @@ public class Level {
 
 
 	public void restartLevel() {
+		CompletableFuture.delayedExecutor(4, TimeUnit.SECONDS).execute(() -> {
+			canTeleport = true;
+  		// Your code here executes after 5 seconds!
+		});
 		int[][] values = mapdata.getValues();
 		Tile[][] tiles = new Tile[width][height];
 
@@ -179,6 +186,33 @@ public class Level {
 		throwPlayerWinEvent();
 	}
 
+
+	public void teleportPerson() {
+    Tile[][] fullMap = map.getTiles();
+    int playerCol = (int) (player.getX() / tileSize);
+    int playerRow = (int) (player.getY() / tileSize);
+
+	int maxCol = fullMap.length;
+	int maxRow = fullMap[0].length;
+
+	for (int i=0; i<waterValues.size(); i++) {
+		if (playerCol==waterValues.get(i).getCol()&&playerRow==waterValues.get(i).getRow()&&canTeleport) {
+				player.setY((int) (Math.random()*maxCol));
+				player.setX((int) (Math.random()*maxRow));
+				player.cancelMomentum();
+				canTeleport = false;
+			break;
+
+
+
+		}
+
+	}
+
+
+  
+}
+
 	public void update(float tslf) {
 		if (active) {
 			// Update the player
@@ -214,14 +248,8 @@ public class Level {
 				}
 			}
 
-			for (int i=0; i<waterValues.size(); i++) {
-				if (map.getTiles()[waterValues.get(i).getCol()][waterValues.get(i).getRow()].getHitbox().isIntersecting(player.getHitbox())) {
-					System.out.println("This is touching");
-				}
-
-
-			}
-
+			teleportPerson();
+			
 
 			
 
